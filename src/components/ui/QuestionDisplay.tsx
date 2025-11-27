@@ -5,14 +5,14 @@ type QuestionDisplayProps = {
   x: number;
   y: number;
   numerator: number;
-  denomirator: number;
+  denominator: number;
 };
 
 export const QuestionDisplay = ({
   x,
   y,
   numerator,
-  denomirator,
+  denominator,
 }: QuestionDisplayProps) => {
   const textStyle = new TextStyle({ fontSize: 40, fill: "white" });
 
@@ -25,9 +25,9 @@ export const QuestionDisplay = ({
   return (
     <pixiContainer x={x} y={y}>
       <pixiText
-        text="お題："
+        text="おだい："
         anchor={{ x: 0, y: 0.5 }}
-        x={-120}
+        x={-150}
         style={new TextStyle({ fontSize: 24, fill: "white" })}
       />
       <pixiText
@@ -38,7 +38,7 @@ export const QuestionDisplay = ({
       />
       <pixiGraphics draw={drawLine} />
       <pixiText
-        text={denomirator.toString()}
+        text={denominator.toString()}
         anchor={0.5}
         y={35}
         style={textStyle}

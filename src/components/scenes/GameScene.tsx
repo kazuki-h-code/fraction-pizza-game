@@ -1,13 +1,19 @@
 import { useReducer } from "react";
-import { reducer, initialState } from "../../reducers/gameReducer";
+import { reducer, initialState } from "../../states/gameReducer";
 import { Pizza } from "../game/Pizza";
 import { Button } from "../ui/Button";
 import { QuestionDisplay } from "../ui/QuestionDisplay";
 import { FeedbackDisplay } from "../ui/FeedbackDisplay";
-import { VIRTUAL_WIDTH, VIRTUAL_HEIGHT } from "../core/GameContainer";
+import { TextStyle } from "pixi.js";
+import { useLayout } from "../../contexts/layoutContext";
+import { ResizeContainer } from "../core/ResizeContainer";
+import { HowToOverlay } from "../ui/HowToOverlay";
+
+const MAX_QUESTIONS = 5;
 
 export const GameScene = ({ onEndGame }: { onEndGame: () => void }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { virtual, isPortrait } = useLayout();
 
   const playerDenominator = state.selectedSlices.length;
 
@@ -28,7 +34,6 @@ export const GameScene = ({ onEndGame }: { onEndGame: () => void }) => {
   };
 
   const handleReset = () => {
-    console.log("リセットボタンがクリックされた");
     dispatch({ type: "reset" });
   };
 
@@ -37,56 +42,82 @@ export const GameScene = ({ onEndGame }: { onEndGame: () => void }) => {
   };
 
   const handleNextQuestion = () => {
-    dispatch({ type: "set_question" });
+    if (state.history.length + 1 > MAX_QUESTIONS) {
+      onEndGame();
+    } else {
+      dispatch({ type: "set_question" });
+    }
   };
 
   return (
     <>
-      <QuestionDisplay
-        x={VIRTUAL_WIDTH / 2}
-        y={80}
-        numerator={state.currentQuestion.numerator}
-        denomirator={state.currentQuestion.denominator}
-      />
-      <Pizza
-        selectedSlices={state.selectedSlices}
-        onSliceClick={handleSliceClick}
-        radius={150}
-        x={VIRTUAL_WIDTH / 2}
-        y={VIRTUAL_HEIGHT / 2 + 30}
-      />
-      <Button
-        text="リセット"
-        x={VIRTUAL_WIDTH - 120}
-        y={VIRTUAL_HEIGHT / 2 - 60}
-        onClick={handleReset}
-      />
-      <Button
-        text="切る"
-        x={VIRTUAL_WIDTH - 120}
-        y={VIRTUAL_HEIGHT / 2}
-        onClick={handleIncreaseDenominator}
-      />
-      <Button
-        text="戻す"
-        x={VIRTUAL_WIDTH - 120}
-        y={VIRTUAL_HEIGHT / 2 + 60}
-        onClick={handleDecreaseDenominator}
-      />
-      <Button text="おわる" x={100} y={50} onClick={onEndGame} />
-      {state.judgement === "pending" && (
-        <Button
-          text="これでどうだ！"
-          x={VIRTUAL_WIDTH / 2}
-          y={550}
-          onClick={handleCheckAnswer}
+      <ResizeContainer
+        virtualWidth={virtual.width}
+        virtualHeight={virtual.height}
+      >
+        <pixiText
+          text={`${state.history.length} もんめ / ぜんぶで ${MAX_QUESTIONS} もん`}
+          x={virtual.width * 0.5}
+          y={isPortrait ? virtual.height * 0.15 : virtual.height * 0.05}
+          anchor={0.5}
+          style={new TextStyle({ fontSize: 20, fill: "white" })}
         />
-      )}
+        <QuestionDisplay
+          x={virtual.width * 0.5}
+          y={isPortrait ? virtual.height * 0.25 : virtual.height * 0.2}
+          numerator={state.currentQuestion.numerator}
+          denominator={state.currentQuestion.denominator}
+        />
+        <Pizza
+          selectedSlices={state.selectedSlices}
+          onSliceClick={handleSliceClick}
+          radius={isPortrait ? 180 : 150}
+          x={virtual.width * 0.5}
+          y={virtual.height * 0.55}
+        />
+        <Button
+          text="やりなおす"
+          x={isPortrait ? virtual.width * 0.15 : virtual.width * 0.85}
+          y={isPortrait ? virtual.height * 0.8 : virtual.height * 0.4}
+          onClick={handleReset}
+        />
+        <Button
+          text="切る"
+          x={isPortrait ? virtual.width * 0.5 : virtual.width * 0.85}
+          y={isPortrait ? virtual.height * 0.8 : virtual.height * 0.55}
+          onClick={handleIncreaseDenominator}
+        />
+        <Button
+          text="もどす"
+          x={isPortrait ? virtual.width * 0.85 : virtual.width * 0.85}
+          y={isPortrait ? virtual.height * 0.8 : virtual.height * 0.7}
+          onClick={handleDecreaseDenominator}
+        />
+        <Button
+          text="おわる"
+          x={virtual.width * 0.1}
+          y={virtual.height * 0.05}
+          onClick={onEndGame}
+          width={100}
+        />
+        {state.judgement === "pending" && (
+          <Button
+            text="これでどうだ！"
+            x={virtual.width * 0.5}
+            y={virtual.height * 0.9}
+            onClick={handleCheckAnswer}
+            width={200}
+          />
+        )}
+      </ResizeContainer>
+      <HowToOverlay />
       {state.judgement !== "pending" && (
         <FeedbackDisplay
           status={state.judgement}
-          screenWidth={VIRTUAL_WIDTH}
-          screenHeight={VIRTUAL_HEIGHT}
+          history={state.history}
+          maxQuestion={MAX_QUESTIONS}
+          virtualWidth={virtual.width}
+          virtualHeight={virtual.height}
           onNextQuestion={handleNextQuestion}
         />
       )}

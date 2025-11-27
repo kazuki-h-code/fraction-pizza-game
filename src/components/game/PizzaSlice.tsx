@@ -39,7 +39,7 @@ export const PizzaSlice = ({
     [index, totalSlices, radius, isHovered, isSelected],
   );
 
-  const handlePointerDown = (index: number) => {
+  const handlePointerDown = () => {
     onSliceClick(index);
     setIsHovered(false);
   };
@@ -50,7 +50,7 @@ export const PizzaSlice = ({
       interactive={true}
       onPointerOver={() => setIsHovered(true)}
       onPointerOut={() => setIsHovered(false)}
-      onPointerDown={() => handlePointerDown(index)}
+      onPointerDown={() => handlePointerDown()}
     />
   );
 };

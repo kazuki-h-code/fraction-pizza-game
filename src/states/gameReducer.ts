@@ -5,6 +5,11 @@ export type GameState = {
     numerator: number;
     denominator: number;
   };
+  history: {
+    numerator: number;
+    denominator: number;
+    result: "pending" | "correct" | "wrong";
+  }[];
   judgement: "pending" | "correct" | "wrong";
 };
 
@@ -17,16 +22,28 @@ export type GameAction =
   | { type: "set_question" };
 
 // 初期状態
+const firstQuestion = generateQuestion();
 export const initialState: GameState = {
   selectedSlices: [false],
-  currentQuestion: { numerator: 1, denominator: 2 },
+  currentQuestion: firstQuestion,
+  history: [{ ...firstQuestion, result: "pending" }],
   judgement: "pending",
 };
+
+function generateQuestion() {
+  const denominator = Math.floor(Math.random() * 9) + 2;
+  const numerator = Math.floor(Math.random() * denominator) + 1;
+  return { numerator, denominator };
+}
 
 // reducer関数
 export function reducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "toggle_slice": {
+      const idx = action.payload;
+      if (idx < 0 || idx > state.selectedSlices.length) {
+        return state;
+      }
       const newSelectedSlices = [...state.selectedSlices];
       newSelectedSlices[action.payload] = !newSelectedSlices[action.payload];
       return { ...state, selectedSlices: newSelectedSlices };
@@ -42,21 +59,36 @@ export function reducer(state: GameState, action: GameAction): GameState {
       const isCorrect =
         selectedCount === state.currentQuestion.numerator &&
         state.selectedSlices.length === state.currentQuestion.denominator;
+
+      const result: "correct" | "wrong" = isCorrect ? "correct" : "wrong";
+
+      const updatedHistory = [...state.history];
+      updatedHistory[updatedHistory.length - 1] = {
+        ...updatedHistory[updatedHistory.length - 1],
+        result: result,
+      };
+
       return {
         ...state,
-        judgement: isCorrect ? "correct" : "wrong",
+        history: updatedHistory,
+        judgement: result,
       };
     }
     case "set_question": {
-      const newDenominator = Math.floor(Math.random() * 9) + 2;
-      const newNumerator = Math.floor(Math.random() * newDenominator) + 1;
+      const newQuestion = generateQuestion();
 
       return {
-        ...initialState,
-        currentQuestion: {
-          numerator: newNumerator,
-          denominator: newDenominator,
-        },
+        ...state,
+        selectedSlices: [false],
+        currentQuestion: newQuestion,
+        history: [
+          ...state.history,
+          {
+            ...newQuestion,
+            result: "pending",
+          },
+        ],
+        judgement: "pending",
       };
     }
     default:

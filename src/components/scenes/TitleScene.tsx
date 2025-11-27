@@ -1,23 +1,36 @@
 import { TextStyle } from "pixi.js";
 import { Button } from "../ui/Button";
-import { VIRTUAL_WIDTH, VIRTUAL_HEIGHT } from "../core/GameContainer";
+import { useLayout } from "../../contexts/layoutContext";
+import { ResizeContainer } from "../core/ResizeContainer";
+import { HowToOverlay } from "../ui/HowToOverlay";
 
-export const TitleScene = ({ onStart }: { onStart: () => void }) => {
+type Props = {
+  onStart: () => void;
+};
+
+export const TitleScene = ({ onStart }: Props) => {
+  const { virtual } = useLayout();
   return (
     <>
-      <pixiText
-        text="分数ピザゲーム"
-        anchor={0.5}
-        x={VIRTUAL_WIDTH / 2}
-        y={VIRTUAL_HEIGHT / 2 - 50}
-        style={new TextStyle({ fontSize: 60, fill: "white" })}
-      />
-      <Button
-        text="START"
-        x={VIRTUAL_WIDTH / 2}
-        y={VIRTUAL_HEIGHT / 2 + 50}
-        onClick={onStart}
-      />
+      <ResizeContainer
+        virtualWidth={virtual.width}
+        virtualHeight={virtual.height}
+      >
+        <pixiText
+          text="分数ピザゲーム"
+          anchor={0.5}
+          x={virtual.width * 0.5}
+          y={virtual.height * 0.35}
+          style={new TextStyle({ fontSize: 60, fill: "white" })}
+        />
+        <Button
+          text="START"
+          x={virtual.width * 0.5}
+          y={virtual.height * 0.6}
+          onClick={onStart}
+        />
+      </ResizeContainer>
+      <HowToOverlay />
     </>
   );
 };

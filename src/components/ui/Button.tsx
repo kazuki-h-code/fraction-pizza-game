@@ -5,34 +5,38 @@ type ButtonProps = {
   text: string;
   x: number;
   y: number;
+  fontsize?: number;
+  width?: number;
+  height?: number;
+  radius?: number;
   onClick: () => void;
 };
 
-export const Button = ({ text, x, y, onClick }: ButtonProps) => {
+export const Button = ({
+  text,
+  x,
+  y,
+  onClick,
+  fontsize = 24,
+  width = 150,
+  height = 50,
+  radius = 10,
+}: ButtonProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
-
-  const buttonWidth = 180;
-  const buttonHeight = 50;
 
   const draw = useCallback(
     (g: Graphics) => {
       const color = isPressed ? 0x1565c0 : isHovered ? 0x42a5f5 : 0x1976d2;
       g.clear();
-      g.filletRect(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight,
-        10,
-      )
+      g.filletRect(-width / 2, -height / 2, width, height, radius)
         .stroke({
           color: color,
           width: 1,
         })
         .fill(color);
     },
-    [isHovered, isPressed],
+    [height, isHovered, isPressed, radius, width],
   );
 
   const scale = isPressed ? 0.95 : 1;
@@ -64,7 +68,7 @@ export const Button = ({ text, x, y, onClick }: ButtonProps) => {
         style={
           new TextStyle({
             fill: "white",
-            fontSize: 24,
+            fontSize: fontsize,
           })
         }
       />
